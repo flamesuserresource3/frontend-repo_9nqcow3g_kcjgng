@@ -110,7 +110,7 @@ export default function AppointmentForm() {
             <div className="flex items-center gap-3">
               <button className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700">Submit</button>
               {submitted && (
-                <span className="text-sm text-emerald-600">Request received. Well confirm shortly.</span>
+                <span className="text-sm text-emerald-600">Request received. We'll confirm shortly.</span>
               )}
             </div>
           </form>
