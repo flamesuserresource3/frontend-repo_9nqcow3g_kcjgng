@@ -1,20 +1,39 @@
 import { useState } from "react";
 import { CalendarDays, Mail, Phone, User } from "lucide-react";
 
+const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+
 export default function AppointmentForm() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", date: "", department: "Cardiology" });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    // In a real app, send to backend here
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3500);
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/appointments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Failed to book appointment");
+      await res.json();
+      setSubmitted(true);
+      setForm({ name: "", email: "", phone: "", date: "", department: "Cardiology" });
+      setTimeout(() => setSubmitted(false), 3500);
+    } catch (err) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -108,10 +127,13 @@ export default function AppointmentForm() {
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700">Submit</button>
+              <button disabled={loading} className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700 disabled:opacity-60">
+                {loading ? "Submitting..." : "Submit"}
+              </button>
               {submitted && (
-                <span className="text-sm text-emerald-600">Request received. We'll confirm shortly.</span>
+                <span className="text-sm text-emerald-600">Appointment booked. We'll confirm shortly.</span>
               )}
+              {error && !submitted && <span className="text-sm text-rose-600">{error}</span>}
             </div>
           </form>
         </div>

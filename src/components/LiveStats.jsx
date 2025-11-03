@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, Bed, Clock, Stethoscope } from "lucide-react";
 
+const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+
 function StatCard({ icon: Icon, label, value, suffix, trend }) {
   return (
     <div className="flex flex-1 items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -32,20 +34,39 @@ export default function LiveStats() {
   });
 
   const ranges = useMemo(
-    () => ({ wait: [5, 25], beds: [60, 98], doctors: [40, 60], activity: [50, 95] }),
+    () => ({ wait: [5, 45], beds: [60, 98], doctors: [12, 80], activity: [40, 95] }),
     []
   );
 
+  // Poll backend stats; if it fails, apply a small jitter for continuity
   useEffect(() => {
-    const id = setInterval(() => {
-      setStats((prev) => ({
-        wait: clamp(jitter(prev.wait, -2, 2), ranges.wait),
-        beds: clamp(jitter(prev.beds, -2, 3), ranges.beds),
-        doctors: clamp(jitter(prev.doctors, -1, 1), ranges.doctors),
-        activity: clamp(jitter(prev.activity, -3, 3), ranges.activity),
-      }));
-    }, 1500);
-    return () => clearInterval(id);
+    let mounted = true;
+
+    async function fetchStats() {
+      try {
+        const res = await fetch(`${API_BASE}/stats`);
+        if (!res.ok) throw new Error("Bad response");
+        const data = await res.json();
+        if (mounted) setStats((prev) => ({ ...prev, ...data }));
+      } catch {
+        // graceful degrade: slight movement
+        if (mounted) {
+          setStats((prev) => ({
+            wait: clamp(jitter(prev.wait, -1, 2), ranges.wait),
+            beds: clamp(jitter(prev.beds, -1, 1), ranges.beds),
+            doctors: clamp(jitter(prev.doctors, -1, 2), ranges.doctors),
+            activity: clamp(jitter(prev.activity, -2, 2), ranges.activity),
+          }));
+        }
+      }
+    }
+
+    fetchStats();
+    const id = setInterval(fetchStats, 5000);
+    return () => {
+      mounted = false;
+      clearInterval(id);
+    };
   }, [ranges]);
 
   const cards = [
