@@ -1,31 +1,22 @@
-import Header from './components/Header';
-import StatsOverview from './components/StatsOverview';
-import PatientTable from './components/PatientTable';
-import AppointmentForm from './components/AppointmentForm';
+import Header from "./components/Header";
+import Hero3D from "./components/Hero3D";
+import LiveStats from "./components/LiveStats";
+import AppointmentForm from "./components/AppointmentForm";
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen bg-slate-50">
       <Header />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <StatsOverview />
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <PatientTable />
-          </div>
-          <div className="lg:col-span-1">
-            <AppointmentForm />
-          </div>
-        </div>
+      <main className="mx-auto max-w-[100rem]">
+        <Hero3D />
+        <LiveStats />
+        <AppointmentForm />
       </main>
-
-      <footer className="py-8 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} Hospital Manager. All rights reserved.
+      <footer className="mt-12 border-t border-slate-200 bg-white py-6">
+        <div className="mx-auto max-w-7xl px-4 text-sm text-slate-500">
+          © {new Date().getFullYear()} NarayanaCare Hospitals. All rights reserved.
+        </div>
       </footer>
     </div>
   );
 }
-
-export default App;
